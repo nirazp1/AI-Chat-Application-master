@@ -62,6 +62,3 @@ Niraj Bot Chat is an AI-powered chat application that uses Google's Gemini AI mo
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
