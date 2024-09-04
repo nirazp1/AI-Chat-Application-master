@@ -58,6 +58,9 @@ Niraj Bot Chat is an AI-powered chat application that uses Google's Gemini AI mo
 - Type your message in the input field and press "Send" or hit Enter
 - Toggle between light and dark modes using the "Toggle Theme" button
 
+## How it look like:
+
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
