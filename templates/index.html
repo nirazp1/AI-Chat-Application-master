@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niraj Bot - Advanced AI Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+                    }
+                },
+                fontFamily: {
+                    'body': [
+                        'Inter', 
+                        'ui-sans-serif', 
+                        'system-ui', 
+                        '-apple-system', 
+                        'system-ui', 
+                        'Segoe UI', 
+                        'Roboto', 
+                        'Helvetica Neue', 
+                        'Arial', 
+                        'Noto Sans', 
+                        'sans-serif', 
+                        'Apple Color Emoji', 
+                        'Segoe UI Emoji', 
+                        'Segoe UI Symbol', 
+                        'Noto Color Emoji'
+                    ],
+                    'sans': [
+                        'Inter', 
+                        'ui-sans-serif', 
+                        'system-ui', 
+                        '-apple-system', 
+                        'system-ui', 
+                        'Segoe UI', 
+                        'Roboto', 
+                        'Helvetica Neue', 
+                        'Arial', 
+                        'Noto Sans', 
+                        'sans-serif', 
+                        'Apple Color Emoji', 
+                        'Segoe UI Emoji', 
+                        'Segoe UI Symbol', 
+                        'Noto Color Emoji'
+                    ]
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <div class="flex h-screen antialiased text-gray-800 dark:text-gray-200">
+        <div class="flex flex-row h-full w-full overflow-x-hidden">
+            <!-- Sidebar -->
+            <div class="flex flex-col py-8 pl-6 pr-2 w-64 bg-white dark:bg-gray-800 flex-shrink-0">
+                <div class="flex flex-row items-center justify-center h-12 w-full">
+                    <div class="flex items-center justify-center rounded-2xl text-indigo-700 bg-indigo-100 h-10 w-10">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    </div>
+                    <div class="ml-2 font-bold text-2xl">Niraj Bot</div>
+                </div>
+                <div class="flex flex-col mt-8">
+                    <div class="flex flex-row items-center justify-between text-xs">
+                        <span class="font-bold">Active Conversations</span>
+                        <span class="flex items-center justify-center bg-gray-300 dark:bg-gray-700 h-4 w-4 rounded-full">4</span>
+                    </div>
+                    <div class="flex flex-col space-y-1 mt-4 -mx-2 h-48 overflow-y-auto" id="chat-history">
+                        <!-- Chat history items will be added here dynamically -->
+                    </div>
+                </div>
+                <button id="new-chat" class="flex flex-row items-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl p-2 mt-4">
+                    <div class="flex items-center justify-center h-8 w-8 bg-indigo-200 dark:bg-indigo-700 rounded-full">
+                        <i class="fas fa-plus text-indigo-700 dark:text-indigo-200"></i>
+                    </div>
+                    <div class="ml-2 text-sm font-semibold">New Chat</div>
+                </button>
+                <button id="theme-toggle" class="flex flex-row items-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl p-2 mt-4">
+                    <div class="flex items-center justify-center h-8 w-8 bg-yellow-200 dark:bg-yellow-700 rounded-full">
+                        <i class="fas fa-sun text-yellow-700 dark:text-yellow-200"></i>
+                    </div>
+                    <div class="ml-2 text-sm font-semibold">Toggle Theme</div>
+                </button>
+            </div>
+            <!-- Chat Area -->
+            <div class="flex flex-col flex-auto h-full p-6">
+                <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 dark:bg-gray-800 h-full p-4">
+                    <div class="flex flex-col h-full overflow-x-auto mb-4">
+                        <div class="flex flex-col h-full">
+                            <div id="chat-messages" class="grid grid-cols-12 gap-y-2">
+                                <!-- Chat messages will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    <div id="typing-indicator" class="text-sm text-gray-500 dark:text-gray-400 italic hidden">Niraj Bot is typing...</div>
+                    <form id="chat-form" class="flex flex-row items-center h-16 rounded-xl bg-white dark:bg-gray-700 w-full px-4">
+                        <div class="flex-grow ml-4">
+                            <div class="relative w-full">
+                                <input type="text" id="message-input" class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10 bg-transparent" autocomplete="off" placeholder="Type your message..."/>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex">
+                            <button type="button" id="voice-input-btn" class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0 mr-2">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button type="submit" class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
+                                <span>Send</span>
+                                <span class="ml-2">
+                                    <svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const themeToggle = document.getElementById('theme-toggle');
+        const newChatButton = document.getElementById('new-chat');
+        const chatHistory = document.getElementById('chat-history');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+
+        let currentChatId = Date.now().toString();
+        let recognition;
+        let synthesis;
+
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+                sendMessage(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+            };
+        } else {
+            console.log('Speech recognition not supported');
+            voiceInputBtn.style.display = 'none';
+        }
+
+        // Initialize speech synthesis
+        if ('speechSynthesis' in window) {
+            synthesis = window.speechSynthesis;
+        } else {
+            console.log('Speech synthesis not supported');
+        }
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            addSystemMessage('Connected to server');
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        newChatButton.addEventListener('click', () => {
+            currentChatId = Date.now().toString();
+            const chatItem = document.createElement('div');
+            chatItem.textContent = `Chat ${chatHistory.children.length + 1}`;
+            chatItem.className = 'flex flex-row items-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl p-2';
+            chatHistory.appendChild(chatItem);
+            chatMessages.innerHTML = '';
+            addSystemMessage('New chat started');
+        });
+
+        voiceInputBtn.addEventListener('click', toggleVoiceInput);
+
+        function toggleVoiceInput() {
+            if (recognition.state === 'inactive') {
+                recognition.start();
+                voiceInputBtn.classList.add('bg-red-500');
+                voiceInputBtn.classList.remove('bg-indigo-500');
+            } else {
+                recognition.stop();
+                voiceInputBtn.classList.remove('bg-red-500');
+                voiceInputBtn.classList.add('bg-indigo-500');
+            }
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (messageInput.value) {
+                sendMessage(messageInput.value);
+            }
+        });
+
+        function sendMessage(message) {
+            addUserMessage(message);
+            console.log('Sending message:', { chatId: currentChatId, message: message });
+            socket.emit('message', { chatId: currentChatId, message: message });
+            messageInput.value = '';
+            typingIndicator.classList.remove('hidden');
+        }
+
+        socket.on('message', (data) => {
+            console.log('Received message:', data);
+            if (data.chatId === currentChatId) {
+                typingIndicator.classList.add('hidden');
+                addBotMessage(data.message);
+                speakMessage(data.message);
+            }
+        });
+
+        function speakMessage(message) {
+            if (synthesis) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.voice = synthesis.getVoices().find(voice => voice.name === 'Google US English');
+                utterance.rate = 1.0; // Speech rate (0.1 to 10)
+                utterance.pitch = 1.0; // Speech pitch (0 to 2)
+                synthesis.speak(utterance);
+            }
+        }
+
+        function addUserMessage(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'col-start-6 col-end-13 p-3 rounded-lg';
+            messageElement.innerHTML = `
+                <div class="flex items-center justify-start flex-row-reverse">
+                    <div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+                        U
+                    </div>
+                    <div class="relative mr-3 text-sm bg-indigo-100 dark:bg-indigo-900 py-2 px-4 shadow rounded-xl">
+                        <div>${msg}</div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addBotMessage(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'col-start-1 col-end-8 p-3 rounded-lg';
+            messageElement.innerHTML = `
+                <div class="flex flex-row items-center">
+                    <div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+                        NB
+                    </div>
+                    <div class="relative ml-3 text-sm bg-white dark:bg-gray-700 py-2 px-4 shadow rounded-xl">
+                        <div>${msg}</div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addSystemMessage(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'col-start-1 col-end-13 p-3 rounded-lg';
+            messageElement.innerHTML = `
+                <div class="flex flex-row items-center">
+                    <div class="relative text-sm bg-yellow-100 dark:bg-yellow-900 py-2 px-4 shadow rounded-xl">
+                        <div>${msg}</div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>

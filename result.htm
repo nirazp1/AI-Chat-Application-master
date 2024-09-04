@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niraj Bot Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nightowl: {
+                            bg: '#011627',
+                            text: '#d6deeb',
+                            accent: '#82aaff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white dark:bg-nightowl-bg text-gray-900 dark:text-nightowl-text">
+    <div class="container mx-auto p-4 flex">
+        <!-- Sidebar -->
+        <div class="w-1/4 pr-4">
+            <button id="new-chat" class="w-full bg-blue-500 dark:bg-nightowl-accent text-white py-2 px-4 rounded mb-4">
+                Add New Chat
+            </button>
+            <div id="chat-history" class="space-y-2">
+                <!-- Chat history items will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Main chat area -->
+        <div class="w-3/4">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold">Chat with Niraj Bot</h1>
+                <button id="theme-toggle" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded">
+                    Toggle Theme
+                </button>
+            </div>
+            <div id="chat-messages" class="h-96 overflow-y-auto bg-gray-100 dark:bg-gray-800 p-4 rounded mb-4"></div>
+            <form id="chat-form" class="flex">
+                <input type="text" id="message-input" class="flex-grow p-2 border rounded-l dark:bg-gray-700 dark:border-gray-600" autocomplete="off">
+                <button type="submit" class="bg-blue-500 dark:bg-nightowl-accent text-white py-2 px-4 rounded-r">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const themeToggle = document.getElementById('theme-toggle');
+        const newChatButton = document.getElementById('new-chat');
+        const chatHistory = document.getElementById('chat-history');
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // New chat
+        newChatButton.addEventListener('click', () => {
+            const chatItem = document.createElement('div');
+            chatItem.textContent = `Chat ${chatHistory.children.length + 1}`;
+            chatItem.className = 'p-2 bg-gray-200 dark:bg-gray-700 rounded cursor-pointer';
+            chatHistory.appendChild(chatItem);
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (messageInput.value) {
+                socket.emit('message', messageInput.value);
+                messageInput.value = '';
+            }
+        });
+
+        socket.on('message', (msg) => {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = msg;
+            messageElement.className = 'mb-2';
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    </script>
+</body>
+</html>
