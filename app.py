@@ -8,7 +8,7 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app)
 
 # Configure Gemini
-genai.configure(api_key='AIzaSyAsV5IIEN-eqhoQvnmLqkiDFVaKNRUZysw')
+genai.configure(api_key='YOUR-SECRET-API-KEY')
 model = genai.GenerativeModel('gemini-pro')
 
 @app.route('/')
