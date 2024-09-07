@@ -1,4 +1,4 @@
-# app.py
+
 from flask import Flask, render_template, request, session
 from flask_socketio import SocketIO, emit
 import google.generativeai as genai
