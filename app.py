@@ -13,7 +13,7 @@ model = genai.GenerativeModel('gemini-pro')
 
 @app.route('/')
 def index():
-    print("Index route accessed")  # Add this line
+    print("Index route accessed") 
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())
     return render_template('index.html')
