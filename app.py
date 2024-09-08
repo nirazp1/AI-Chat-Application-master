@@ -20,7 +20,7 @@ def index():
 
 @socketio.on('message')
 def handle_message(data):
-    print(f"Received message: {data}")  # Add this line
+    print(f"Received message: {data}")  
     chat_id = data['chatId']
     message = data['message']
     
